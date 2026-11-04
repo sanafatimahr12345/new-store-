@@ -1,0 +1,6 @@
+{
+  "name": "Pure Harvest - Premium Pakistani Organic & Desi Food Products",
+  "description": "Experience pure desi ghee, raw organic honey, handcrafted traditional mixed achar, and authentic heritage food products from Pure Harvest.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
