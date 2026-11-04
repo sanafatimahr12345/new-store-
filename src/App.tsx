@@ -13,7 +13,18 @@ import {
   loadOrders, 
   saveOrders,
   getUnreadOrdersCount,
-  setUnreadOrdersCount
+  setUnreadOrdersCount,
+  fetchRemoteProducts,
+  saveRemoteProduct,
+  updateRemoteProduct,
+  deleteRemoteProduct,
+  syncLocalCustomProductsToServer,
+  fetchRemoteOrders,
+  saveRemoteOrder,
+  updateRemoteOrderStatus,
+  deleteRemoteOrder,
+  fetchSyncData,
+  resetRemoteUnreadCount
 } from './utils/productStorage';
 
 import { AnnouncementBar } from './components/AnnouncementBar';
@@ -163,6 +174,60 @@ export default function App() {
     saveCatalog(products);
   }, [products]);
 
+  // Multi-device cloud sync: uploads any local custom products and pulls server catalog/orders
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeAndSync = async () => {
+      try {
+        // Upload any custom products previously created on this device to server
+        await syncLocalCustomProductsToServer();
+
+        // Fetch authoritative server catalog and orders
+        const [remoteProducts, remoteOrders] = await Promise.all([
+          fetchRemoteProducts(INITIAL_PRODUCTS),
+          fetchRemoteOrders()
+        ]);
+
+        if (isMounted) {
+          if (remoteProducts && remoteProducts.length > 0) {
+            setProducts(remoteProducts);
+          }
+          if (remoteOrders) {
+            setOrders(remoteOrders);
+          }
+        }
+      } catch (e) {
+        console.warn('Initial cloud sync notice:', e);
+      }
+    };
+
+    initializeAndSync();
+
+    // Poll server every 6 seconds to detect new products or orders placed on other phones
+    const interval = setInterval(async () => {
+      try {
+        const syncData = await fetchSyncData();
+        if (syncData && isMounted) {
+          if (syncData.products && syncData.products.length > 0) {
+            setProducts(syncData.products);
+          }
+          if (syncData.orders) {
+            setOrders(syncData.orders);
+          }
+          if (typeof syncData.unreadCount === 'number') {
+            setUnreadOrders(syncData.unreadCount);
+          }
+        }
+      } catch {}
+    }, 6000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   // Cart actions
   const handleAddToCart = (product: Product, size: string, quantity: number = 1) => {
     const itemId = `${product.id}-${size}`;
@@ -225,8 +290,8 @@ export default function App() {
     });
   };
 
-  // Order submission - notifies admin and tracks unread count
-  const handleOrderPlaced = (order: PlacedOrder) => {
+  // Order submission - notifies admin and syncs across all devices
+  const handleOrderPlaced = async (order: PlacedOrder) => {
     setOrders((prev) => {
       const updated = [order, ...prev];
       saveOrders(updated);
@@ -241,6 +306,16 @@ export default function App() {
     setIsCheckoutOpen(false);
     setConfirmedOrder(order);
     showToast(`Order #${order.orderNumber} placed! Admin notified.`);
+
+    // Persist to central cloud database so admin immediately sees it on their phone
+    try {
+      const serverOrders = await saveRemoteOrder(order);
+      if (serverOrders) {
+        setOrders(serverOrders);
+      }
+    } catch (e) {
+      console.warn('Order sync notice:', e);
+    }
   };
 
   // Open Admin Portal and mark orders as inspected
@@ -248,28 +323,48 @@ export default function App() {
     setIsAdminOpen(true);
     setUnreadOrders(0);
     setUnreadOrdersCount(0);
+    resetRemoteUnreadCount();
   };
 
-  // Admin product actions - guarantees permanent store persistence
-  const handleAddProduct = (newProduct: Product) => {
+  // Admin product actions - guarantees permanent store persistence across all devices
+  const handleAddProduct = async (newProduct: Product) => {
     setProducts((prev) => {
       const updated = [newProduct, ...prev.filter((p) => p.id !== newProduct.id)];
       saveCatalog(updated);
       return updated;
     });
-    showToast(`"${newProduct.name}" added permanently to store catalog!`);
+    showToast(`"${newProduct.name}" added to store catalog!`);
+
+    // Synchronize to server so all phones see it online
+    try {
+      const serverProducts = await saveRemoteProduct(newProduct);
+      if (serverProducts) {
+        setProducts(serverProducts);
+      }
+    } catch (e) {
+      console.warn('Product save sync notice:', e);
+    }
   };
 
-  const handleUpdateProduct = (updated: Product) => {
+  const handleUpdateProduct = async (updated: Product) => {
     setProducts((prev) => {
       const next = prev.map((p) => (p.id === updated.id ? updated : p));
       saveCatalog(next);
       return next;
     });
     showToast(`Updated "${updated.name}" in catalog`);
+
+    try {
+      const serverProducts = await updateRemoteProduct(updated);
+      if (serverProducts) {
+        setProducts(serverProducts);
+      }
+    } catch (e) {
+      console.warn('Product update sync notice:', e);
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     recordDeletedProductId(productId);
     setProducts((prev) => {
       const next = prev.filter((p) => p.id !== productId);
@@ -280,24 +375,51 @@ export default function App() {
     setWishlist((prev) => prev.filter((id) => id !== productId));
     setCompareList((prev) => prev.filter((id) => id !== productId));
     showToast('Product deleted permanently from store');
+
+    try {
+      const serverProducts = await deleteRemoteProduct(productId);
+      if (serverProducts) {
+        setProducts(serverProducts);
+      }
+    } catch (e) {
+      console.warn('Product delete sync notice:', e);
+    }
   };
 
-  const handleUpdateOrderStatus = (orderId: string, newStatus: PlacedOrder['status']) => {
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: PlacedOrder['status']) => {
     setOrders((prev) => {
       const updated = prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
       saveOrders(updated);
       return updated;
     });
     showToast(`Order status updated to ${newStatus}`);
+
+    try {
+      const serverOrders = await updateRemoteOrderStatus(orderId, newStatus);
+      if (serverOrders) {
+        setOrders(serverOrders);
+      }
+    } catch (e) {
+      console.warn('Order status sync notice:', e);
+    }
   };
 
-  const handleDeleteOrder = (orderId: string) => {
+  const handleDeleteOrder = async (orderId: string) => {
     setOrders((prev) => {
       const updated = prev.filter((o) => o.id !== orderId);
       saveOrders(updated);
       return updated;
     });
     showToast('Order removed from system');
+
+    try {
+      const serverOrders = await deleteRemoteOrder(orderId);
+      if (serverOrders) {
+        setOrders(serverOrders);
+      }
+    } catch (e) {
+      console.warn('Order delete sync notice:', e);
+    }
   };
 
   // Scroll helper

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "desi-ghee-pure",
+    "name": "Pure Desi Ghee",
+    "slug": "pure-desi-ghee",
+    "category": "ghee",
+    "categoryLabel": "Desi Ghee",
+    "description": "Traditional homemade-style desi ghee with rich aroma and authentic taste.",
+    "longDescription": "Crafted following age-old Pakistani churned butter traditions, our Pure Desi Ghee is prepared in small batches from whole milk curds (bilona method). Slowly simmered over low flame until golden clarity and intoxicating nutty aroma are achieved. Free from palm oil, artificial flavors, preservatives, and chemicals.",
+    "price": 2450,
+    "oldPrice": 2800,
+    "rating": 4.9,
+    "reviewsCount": 148,
+    "badge": "BEST SELLER",
+    "image": "/images/product_pure_desi_ghee_1793354317123.jpg",
+    "sizes": [
+      "500g",
+      "1kg",
+      "2kg"
+    ],
+    "defaultSize": "1kg",
+    "origin": "Punjab Dairy Heartland, Pakistan",
+    "ingredients": [
+      "100% Clarified Butter Fat from Pure Whole Buffalo Milk"
+    ],
+    "nutritionalHighlights": [
+      "Rich in Omega-3 and Butyric Acid",
+      "High Smoke Point (250°C)",
+      "Natural Vitamins A, D, E & K"
+    ],
+    "inStock": true,
+    "featured": true,
+    "isBestSeller": true
+  },
+  {
+    "id": "organic-honey-pure",
+    "name": "Organic Pure Honey",
+    "slug": "organic-pure-honey",
+    "category": "honey",
+    "categoryLabel": "Organic Honey",
+    "description": "Naturally harvested honey with rich flavor and traditional goodness.",
+    "longDescription": "Raw, unfiltered, and 100% pure wildflower honey ethically harvested from untouched mountain valleys. Kept unheated to retain naturally occurring bee pollen, active enzymes, and beneficial antioxidants. Delivers an opulent amber hue and deep floral notes that elevate morning breakfast and herbal tea.",
+    "price": 1850,
+    "oldPrice": 2100,
+    "rating": 4.8,
+    "reviewsCount": 112,
+    "badge": "ORGANIC",
+    "image": "/public/assets/aistudio/image_ba2ec814.png",
+    "sizes": [
+      "450g",
+      "900g"
+    ],
+    "defaultSize": "450g",
+    "origin": "Margalla Foothills & Northern Valleys, Pakistan",
+    "ingredients": [
+      "100% Raw Unpasteurized Pure Honey"
+    ],
+    "nutritionalHighlights": [
+      "Natural Prebiotic & Digestive Enzymes",
+      "Zero Added Corn Syrup or Sugar",
+      "Rich in Polyphenols"
+    ],
+    "inStock": true,
+    "featured": true,
+    "isBestSeller": true
+  },
+  {
+    "id": "traditional-mix-achar",
+    "name": "Traditional Mix Achar",
+    "slug": "traditional-mix-achar",
+    "category": "pickles",
+    "categoryLabel": "Traditional Pickles",
+    "description": "Authentic homemade-style pickle with carefully selected spices.",
+    "longDescription": "Handcrafted according to ancestral household recipes, this vibrant traditional Pakistani mix achar features crunchy green raw mango, zesty local lemons, tender green chilies, and whole sun-cured spices immersed in pure cold-pressed mustard oil. Sun-cured for three weeks for optimal maturation and tangy, zesty bite.",
+    "price": 850,
+    "oldPrice": 1000,
+    "rating": 4.9,
+    "reviewsCount": 89,
+    "badge": "TRADITIONAL",
+    "image": "/images/product_mix_achar_1793354318513.jpg",
+    "sizes": [
+      "450g",
+      "1kg"
+    ],
+    "defaultSize": "450g",
+    "origin": "Multan, South Punjab",
+    "ingredients": [
+      "Raw Mango",
+      "Lemon",
+      "Green Chili",
+      "Cold-Pressed Mustard Oil",
+      "Fennel Seeds (Saunf)",
+      "Fenugreek (Methi Dana)",
+      "Nigella Seeds (Kalonji)",
+      "Himalayan Pink Salt",
+      "Turmeric"
+    ],
+    "nutritionalHighlights": [
+      "Naturally Fermented with Probiotics",
+      "Zero Synthetic Acetic Acid/Vinegar",
+      "Cold-Pressed Oil Base"
+    ],
+    "inStock": true,
+    "featured": true,
+    "isBestSeller": false
+  },
+  {
+    "id": "khalis-cow-ghee",
+    "name": "Khalis Cow Desi Ghee",
+    "slug": "khalis-cow-desi-ghee",
+    "category": "ghee",
+    "categoryLabel": "Desi Ghee",
+    "description": "Golden yellow A2 grass-fed cow ghee with a delicate sweet fragrance.",
+    "longDescription": "Sourced from free-grazing indigenous Sahiwal and Cholistani cows. Golden yellow due to natural beta-carotene, this light and easily digestible ghee is ideal for children, elders, and ayurvedic wellness recipes.",
+    "price": 2850,
+    "oldPrice": 3200,
+    "rating": 5,
+    "reviewsCount": 64,
+    "badge": "A2 GRASS-FED",
+    "image": "/images/product_khalis_cow_ghee_1793359292362.jpg",
+    "sizes": [
+      "500g",
+      "1kg"
+    ],
+    "defaultSize": "1kg",
+    "origin": "Cholistan & Sahiwal Meadows",
+    "ingredients": [
+      "100% Clarified Butter Fat from Grass-Fed Desi Cow Milk"
+    ],
+    "nutritionalHighlights": [
+      "Natural Beta-Carotene",
+      "Easy Digestion",
+      "A2 Beta-Casein Origin"
+    ],
+    "inStock": true,
+    "featured": false,
+    "isBestSeller": true
+  },
+  {
+    "id": "shahi-garam-masala",
+    "name": "Shahi Royal Garam Masala",
+    "slug": "shahi-royal-garam-masala",
+    "category": "spices",
+    "categoryLabel": "Organic Spices",
+    "description": "Slow-roasted whole 14-spice royal blend freshly stone-ground in stone mills.",
+    "longDescription": "A majestic Mughal-inspired blend combining green cardamom, black cumin (shahi jeera), mace (javitri), nutmeg (jaiphal), star anise, cinnamon quills, and cloves. Mildly roasted on heavy iron skillets before gentle slow grinding to prevent volatile oil loss.",
+    "price": 650,
+    "oldPrice": 750,
+    "rating": 4.9,
+    "reviewsCount": 43,
+    "badge": "HAND-GROUND",
+    "image": "/images/product_mix_achar_1793354318513.jpg",
+    "sizes": [
+      "150g",
+      "300g"
+    ],
+    "defaultSize": "150g",
+    "origin": "Handmade in Lahore",
+    "ingredients": [
+      "Cardamom",
+      "Cinnamon",
+      "Cloves",
+      "Mace",
+      "Nutmeg",
+      "Star Anise",
+      "Black Cumin",
+      "Coriander"
+    ],
+    "nutritionalHighlights": [
+      "Zero Fillers or Starch",
+      "100% Whole Spices",
+      "Sealed in Aroma-Lock Jar"
+    ],
+    "inStock": true,
+    "featured": false,
+    "isBestSeller": false
+  }
+]

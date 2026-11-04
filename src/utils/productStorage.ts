@@ -265,3 +265,231 @@ export const setUnreadOrdersCount = (count: number): void => {
     localStorage.setItem(UNREAD_ORDERS_KEY, count.toString());
   } catch {}
 };
+
+// ----------------------------------------------------------------------
+// Centralized Cloud / Server API Synchronization (Multi-device support)
+// ----------------------------------------------------------------------
+
+// Fetch products from server, saving to local cache on success
+export const fetchRemoteProducts = async (fallbackProducts: Product[]): Promise<Product[]> => {
+  try {
+    const res = await fetch('/api/products', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+        saveCatalog(data.products);
+        return data.products;
+      }
+    }
+  } catch (err) {
+    console.warn('[Sync] Falling back to local catalog:', err);
+  }
+  return loadCatalog(fallbackProducts);
+};
+
+// Save a new product to server (visible across all mobile devices & browsers)
+export const saveRemoteProduct = async (product: Product): Promise<Product[] | null> => {
+  try {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products)) {
+        saveCatalog(data.products);
+        return data.products;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error saving remote product:', err);
+  }
+  return null;
+};
+
+// Update an existing product on server
+export const updateRemoteProduct = async (product: Product): Promise<Product[] | null> => {
+  try {
+    const res = await fetch(`/api/products/${encodeURIComponent(product.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products)) {
+        saveCatalog(data.products);
+        return data.products;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error updating remote product:', err);
+  }
+  return null;
+};
+
+// Permanently delete a product on server
+export const deleteRemoteProduct = async (productId: string): Promise<Product[] | null> => {
+  try {
+    recordDeletedProductId(productId);
+    const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products)) {
+        saveCatalog(data.products);
+        return data.products;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error deleting remote product:', err);
+  }
+  return null;
+};
+
+// Batch sync any custom products stored locally in this device's browser to the server
+export const syncLocalCustomProductsToServer = async (): Promise<Product[] | null> => {
+  try {
+    const customRaw = localStorage.getItem(CUSTOM_PRODUCTS_KEY);
+    if (!customRaw) return null;
+    const customProducts = JSON.parse(customRaw);
+    if (!Array.isArray(customProducts) || customProducts.length === 0) return null;
+
+    const res = await fetch('/api/products/batch-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customProducts }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products)) {
+        saveCatalog(data.products);
+        return data.products;
+      }
+    }
+  } catch (err) {
+    console.warn('[Sync] Local batch sync notice:', err);
+  }
+  return null;
+};
+
+// Fetch orders placed by customers across all devices
+export const fetchRemoteOrders = async (): Promise<PlacedOrder[]> => {
+  try {
+    const res = await fetch('/api/orders', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        saveOrders(data.orders);
+        return data.orders;
+      }
+    }
+  } catch (err) {
+    console.warn('[Sync] Falling back to local orders:', err);
+  }
+  return loadOrders();
+};
+
+// Post a new customer order to the central server so admin receives it immediately
+export const saveRemoteOrder = async (order: PlacedOrder): Promise<PlacedOrder[] | null> => {
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        saveOrders(data.orders);
+        return data.orders;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error saving order to server:', err);
+  }
+  return null;
+};
+
+// Update order status on the server
+export const updateRemoteOrderStatus = async (
+  orderId: string, 
+  status: PlacedOrder['status']
+): Promise<PlacedOrder[] | null> => {
+  try {
+    const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        saveOrders(data.orders);
+        return data.orders;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error updating order status on server:', err);
+  }
+  return null;
+};
+
+// Delete an order on the server
+export const deleteRemoteOrder = async (orderId: string): Promise<PlacedOrder[] | null> => {
+  try {
+    const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        saveOrders(data.orders);
+        return data.orders;
+      }
+    }
+  } catch (err) {
+    console.error('[Sync] Error deleting order on server:', err);
+  }
+  return null;
+};
+
+// Real-time synchronization poll
+export const fetchSyncData = async (): Promise<{
+  products: Product[];
+  orders: PlacedOrder[];
+  unreadCount: number;
+} | null> => {
+  try {
+    const res = await fetch('/api/sync', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        if (Array.isArray(data.products)) saveCatalog(data.products);
+        if (Array.isArray(data.orders)) saveOrders(data.orders);
+        if (typeof data.unreadCount === 'number') setUnreadOrdersCount(data.unreadCount);
+        return {
+          products: data.products,
+          orders: data.orders,
+          unreadCount: data.unreadCount,
+        };
+      }
+    }
+  } catch {
+    // Silent on network hiccup
+  }
+  return null;
+};
+
+// Reset unread count on server
+export const resetRemoteUnreadCount = async (): Promise<void> => {
+  try {
+    setUnreadOrdersCount(0);
+    await fetch('/api/admin/reset-unread', { method: 'POST' });
+  } catch (err) {
+    console.warn('[Sync] Reset unread count notice:', err);
+  }
+};
+
